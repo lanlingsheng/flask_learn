@@ -3,8 +3,13 @@ __author__ = 'lenovo'
 from flask import Flask
 from flask import request
 from flask import render_template
+from flask_bootstrap import Bootstrap
+from flask_script import Manager
 
 app = Flask(__name__)
+
+manager = Manager(app)
+boostrap = Bootstrap(app)
 
 @app.route('/')
 def index():
