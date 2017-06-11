@@ -11,6 +11,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import Required
 from flask import session, redirect, url_for
+from flask import flash
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'gy18977949946//'
@@ -29,11 +30,13 @@ class NameForm(FlaskForm):
 def index():
     # user_agent = request.headers.get('User-Agent')
     # return '<h1>Your Brower is %s<h1>' %user_agent
-    name = None
     form = NameForm()
     if form.validate_on_submit():
         #name = form.name.data
         #form.name.data = ''
+        old_name = session.get('name')
+        if old_name is not None and old_name != form.name.data:
+            flash('Looks like you have changed your name!')
         session['name'] = form.name.data
         return redirect(url_for('index'))
     return render_template('index.html', form=form, name=session.get('name'), current_time=datetime.utcnow())
