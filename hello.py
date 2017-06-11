@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 __author__ = 'lenovo'
+import os
 from flask import Flask
 from flask import request
 from flask import render_template
@@ -12,18 +13,46 @@ from wtforms import StringField, SubmitField
 from wtforms.validators import Required
 from flask import session, redirect, url_for
 from flask import flash
+from flask_sqlalchemy import SQLAlchemy
+
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'gy18977949946//'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
+app.config['SQLALCHEMY_COMMIIT_ON_TEARDOWN'] = True
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 manager = Manager(app)
 bootstrap = Bootstrap(app)
 moment = Moment(app)
+db = SQLAlchemy(app)
 
 
 class NameForm(FlaskForm):
     name = StringField('What is your name?', validators=[Required()])
     submit = SubmitField('Submit')
+
+
+class Role(db.Model):
+    __tablename__ = 'roles'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True)
+    users = db.relationship('User', backref='role')
+
+    def __repr__(self):
+        return '<Role %r>' % self.name
+
+
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(64), unique=True, index=True)
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+
+    def __repr__(self):
+        return '<User %r>' % self.username
+        return '<User %r>' % self.username
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -32,8 +61,8 @@ def index():
     # return '<h1>Your Brower is %s<h1>' %user_agent
     form = NameForm()
     if form.validate_on_submit():
-        #name = form.name.data
-        #form.name.data = ''
+        # name = form.name.data
+        # form.name.data = ''
         old_name = session.get('name')
         if old_name is not None and old_name != form.name.data:
             flash('Looks like you have changed your name!')
