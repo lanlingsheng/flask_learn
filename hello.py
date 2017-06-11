@@ -52,7 +52,6 @@ class User(db.Model):
 
     def __repr__(self):
         return '<User %r>' % self.username
-        return '<User %r>' % self.username
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -61,14 +60,16 @@ def index():
     # return '<h1>Your Brower is %s<h1>' %user_agent
     form = NameForm()
     if form.validate_on_submit():
-        # name = form.name.data
-        # form.name.data = ''
-        old_name = session.get('name')
-        if old_name is not None and old_name != form.name.data:
-            flash('Looks like you have changed your name!')
+        user = User.query.filter_by(username=form.name.data).first()
+        if user is None:
+            user=User(username=form.name.data)
+            db.session.add(user)
+            session['known'] = False
+        else:
+            session['known'] = True
         session['name'] = form.name.data
         return redirect(url_for('index'))
-    return render_template('index.html', form=form, name=session.get('name'), current_time=datetime.utcnow())
+    return render_template('index.html', form=form, name=session.get('name'), known=session.get('known', False), current_time=datetime.utcnow())
 
 
 @app.route('/user/<name>')
