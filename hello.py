@@ -7,9 +7,10 @@ from flask_bootstrap import Bootstrap
 from flask_script import Manager
 from flask_moment import Moment
 from datetime import datetime
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import Required
+from flask import session, redirect, url_for
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'gy18977949946//'
@@ -19,7 +20,7 @@ bootstrap = Bootstrap(app)
 moment = Moment(app)
 
 
-class NameForm(Form):
+class NameForm(FlaskForm):
     name = StringField('What is your name?', validators=[Required()])
     submit = SubmitField('Submit')
 
@@ -31,9 +32,11 @@ def index():
     name = None
     form = NameForm()
     if form.validate_on_submit():
-        name = form.name.data
-        form.name.data = ''
-    return render_template('index.html', form=form, name=name, current_time=datetime.utcnow())
+        #name = form.name.data
+        #form.name.data = ''
+        session['name'] = form.name.data
+        return redirect(url_for('index'))
+    return render_template('index.html', form=form, name=session.get('name'), current_time=datetime.utcnow())
 
 
 @app.route('/user/<name>')
