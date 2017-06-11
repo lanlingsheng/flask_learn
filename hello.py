@@ -5,7 +5,7 @@ from flask import Flask
 from flask import request
 from flask import render_template
 from flask_bootstrap import Bootstrap
-from flask_script import Manager
+from flask_script import Manager, Shell
 from flask_moment import Moment
 from datetime import datetime
 from flask_wtf import FlaskForm
@@ -62,14 +62,22 @@ def index():
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.name.data).first()
         if user is None:
-            user=User(username=form.name.data)
+            user = User(username=form.name.data)
             db.session.add(user)
             session['known'] = False
         else:
             session['known'] = True
         session['name'] = form.name.data
         return redirect(url_for('index'))
-    return render_template('index.html', form=form, name=session.get('name'), known=session.get('known', False), current_time=datetime.utcnow())
+    return render_template('index.html', form=form, name=session.get('name'), known=session.get('known', False),
+                           current_time=datetime.utcnow())
+
+
+def make_shell_context():
+    return dict(app=app, db=db, User=User, Role=Role)
+
+
+manager.add_command("shell", Shell(make_context=make_shell_context))
 
 
 @app.route('/user/<name>')
@@ -89,4 +97,4 @@ def internal_server_error(e):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    manager.run()
