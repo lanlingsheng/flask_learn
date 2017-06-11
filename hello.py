@@ -14,6 +14,7 @@ from wtforms.validators import Required
 from flask import session, redirect, url_for
 from flask import flash
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate,MigrateCommand
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -27,6 +28,8 @@ manager = Manager(app)
 bootstrap = Bootstrap(app)
 moment = Moment(app)
 db = SQLAlchemy(app)
+migrate = Migrate(app,db)
+manager.add_command('db', MigrateCommand)
 
 
 class NameForm(FlaskForm):
